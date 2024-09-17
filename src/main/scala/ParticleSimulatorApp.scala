@@ -5,25 +5,38 @@ import scalafx.stage.StageStyle
 import scalafx.Includes._
 import scalafx.scene.input.KeyCode
 import scalafx.application.Platform
+import scalafx.scene.paint.Color
 
 object ParticleSimulatorApp extends JFXApp3 {
 
-  var defaultWidth = 1920
-  var defaultHeight = 1200
+  val DefaultWidth = 1920
+  val DefaultHeight = 1200
 
   override def start(): Unit = {
     // Create the canvas for the particle simulation
-    val canvas = new Canvas(defaultWidth, defaultHeight)
-    val simulator = new Simulator(defaultWidth, defaultHeight)
+    val canvas = new Canvas(DefaultWidth, DefaultHeight)
+
+    // Define attraction strength for each color
+    val colorAttractionStrength = Map(
+      Color.Red -> 0.05,
+      Color.Blue -> 0.03,
+      Color.Green -> 0.08,
+      Color.Orange -> 0.06,
+      Color.Purple -> 0.04
+    )
+
+    val simulator = new Simulator(DefaultWidth, DefaultHeight, colorAttractionStrength)
 
     // Add some particles to the simulator
-    for (_ <- 1 to 500) {
+    val colors = List(Color.Red, Color.Blue, Color.Green, Color.Orange, Color.Purple)
+    for (i <- 1 to 500) {
       val p = Particle(
-        x = math.random() * defaultWidth,
-        y = math.random() * defaultHeight,
-        vx = (math.random() - 0.5) * 5,
-        vy = (math.random() - 0.5) * 5,
-        radius = 3
+        x = math.random() * DefaultWidth,
+        y = math.random() * DefaultHeight,
+        vx = 0,
+        vy = 0,
+        radius = 3,
+        color = colors(i % colors.length) // Assign one of the 5 colors in rotation
       )
       simulator.addParticle(p)
     }
