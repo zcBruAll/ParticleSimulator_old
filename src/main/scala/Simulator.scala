@@ -2,28 +2,32 @@ import scala.collection.mutable.ArrayBuffer
 import scalafx.animation.AnimationTimer
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
+import java.security.Timestamp
+import java.time.Instant
 
-class Simulator(var width: Double, var height: Double, colorAttractionStrength: Map[Color, Double]) {
+class Simulator(var width: Double, var height: Double) {
   private val particles = scala.collection.mutable.Buffer[Particle]()
+
+  private var oldTimestamp = Instant.now().toEpochMilli()
 
   def addParticle(p: Particle): Unit = {
     particles += p
   }
 
-  def update(): Unit = {
+  def update(dt: Long): Unit = {
     // Apply attraction between particles of the same color
     for (i <- particles.indices) {
       for (j <- i + 1 until particles.length) {
         val p1 = particles(i)
         val p2 = particles(j)
-        val attractionStrength = colorAttractionStrength.getOrElse(p1.color, 0.0)
-        p1.applyAttraction(p2, attractionStrength)
+
+        p1.applyAttraction(p2, dt)
       }
     }
 
     // Update the position and check bounds for each particle
     particles.foreach { p =>
-      p.move()
+      p.move(dt)
       p.checkBounds(width, height)
     }
   }
@@ -33,7 +37,9 @@ class Simulator(var width: Double, var height: Double, colorAttractionStrength: 
 
     // Create the AnimationTimer using the function-based approach
     val timer = AnimationTimer { now =>
-      update()
+      val timestampNow = Instant.now().toEpochMilli()
+      update((oldTimestamp - timestampNow) / 2)
+      oldTimestamp = timestampNow
 
       gc.clearRect(0, 0, canvas.width.value, canvas.height.value)
 

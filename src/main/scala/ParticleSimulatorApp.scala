@@ -16,25 +16,17 @@ object ParticleSimulatorApp extends JFXApp3 {
     // Create the canvas for the particle simulation
     val canvas = new Canvas(DefaultWidth, DefaultHeight)
 
-    // Define attraction strength for each color
-    val colorAttractionStrength = Map(
-      Color.Red -> 0.05,
-      Color.Blue -> 0.03,
-      Color.Green -> 0.08,
-      Color.Orange -> 0.06,
-      Color.Purple -> 0.04
-    )
-
-    val simulator = new Simulator(DefaultWidth, DefaultHeight, colorAttractionStrength)
+    val simulator = new Simulator(DefaultWidth, DefaultHeight)
 
     // Add some particles to the simulator
     val colors = List(Color.Red, Color.Blue, Color.Green, Color.Orange, Color.Purple)
-    for (i <- 1 to 500) {
+    for (i <- 1 to 100) {
       val p = Particle(
         x = math.random() * DefaultWidth,
         y = math.random() * DefaultHeight,
         vx = 0,
         vy = 0,
+        mass = Int.MaxValue / 50,
         radius = 3,
         color = colors(i % colors.length) // Assign one of the 5 colors in rotation
       )

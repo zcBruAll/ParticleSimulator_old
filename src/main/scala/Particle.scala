@@ -5,30 +5,40 @@ case class Particle(
   var y: Double,
   var vx: Double,
   var vy: Double,
+  val mass: Double,
   val radius: Double,
   val color: Color  // Add color property
 ) {
   // Move the particle
-  def move(): Unit = {
-    x += vx
-    y += vy
+  def move(dt: Long): Unit = {
+    x += vx * dt
+    y += vy * dt
   }
 
   // Apply attraction between particles of the same color
-  def applyAttraction(other: Particle, attractionStrength: Double): Unit = {
+  def applyAttraction(other: Particle, dt: Long): Unit = {
+
+    val GravitationnalConstant = 6.67 * Math.pow(10, -11)
+
     val dx = other.x - this.x
     val dy = other.y - this.y
     val distance = math.sqrt(dx * dx + dy * dy)
+    
+    val force = (GravitationnalConstant * other.mass * this.mass) / Math.pow(distance, 2)
 
-    if (distance > 0 && distance < 200) {  // Apply attraction if within a certain distance
-      val force = attractionStrength / distance
+    val accelThis = force / this.mass
 
-      // Apply force to velocities
-      this.vx += force * dx / distance
-      this.vy += force * dy / distance
-      other.vx -= force * dx / distance
-      other.vy -= force * dy / distance
-    }
+    // Direction of the force (normalize dx, dy)
+    val ax = (dx / distance) * accelThis
+    val ay = (dy / distance) * accelThis
+
+    // Update velocities based on acceleration and time step
+    this.vx += ax * dt
+    this.vy += ay * dt
+
+    // The other particle will experience equal but opposite force
+    other.vx -= ax * dt
+    other.vy -= ay * dt
   }
 
   // Check if the particle hits the window edges and bounce
