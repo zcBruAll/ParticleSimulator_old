@@ -15,21 +15,32 @@ class Simulator(var width: Double, var height: Double) {
   }
 
   def update(dt: Long): Unit = {
-    // Apply attraction between particles of the same color
-    for (i <- particles.indices) {
-      for (j <- i + 1 until particles.length) {
-        val p1 = particles(i)
-        val p2 = particles(j)
+    val rootBounds = (0.0, 0.0, width, height)
+    val quadTree = particles.foldLeft(Empty: QuadTree) { (tree, p) =>
+      insert(p, tree, rootBounds)
+    }
 
-        p1.applyAttraction(p2, dt)
+    // Collect particles that have merged
+    val mergedParticles = scala.collection.mutable.Set[Particle]()
+
+    // Calculate the forces for each particle using the QuadTree
+    particles.foreach { p =>
+      if (!mergedParticles.contains(p)) {
+        particles.foreach { other =>
+          if (p != other && !mergedParticles.contains(other)) {
+            if (p.applyAttraction(other, dt)) {
+              mergedParticles += other // Mark the other particle as merged
+            }
+          }
+        }
       }
     }
 
-    // Update the position and check bounds for each particle
-    particles.foreach { p =>
-      p.move(dt)
-      p.checkBounds(width, height)
-    }
+    // Remove merged particles
+    particles --= mergedParticles
+
+    // Move each particle based on its updated velocity
+    particles.foreach(_.move(dt))
   }
 
   def startSimulation(canvas: Canvas): Unit = {
@@ -38,7 +49,7 @@ class Simulator(var width: Double, var height: Double) {
     // Create the AnimationTimer using the function-based approach
     val timer = AnimationTimer { now =>
       val timestampNow = Instant.now().toEpochMilli()
-      update((oldTimestamp - timestampNow) / 2)
+      update((timestampNow - oldTimestamp) / 2)
       oldTimestamp = timestampNow
 
       gc.clearRect(0, 0, canvas.width.value, canvas.height.value)
@@ -50,5 +61,10 @@ class Simulator(var width: Double, var height: Double) {
     }
 
     timer.start() // Start the animation
+  }
+  
+  def updateBounds(newWidth: Double, newHeight: Double): Unit = {
+    this.width = newWidth
+    this.height = newHeight
   }
 }

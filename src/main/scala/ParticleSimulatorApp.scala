@@ -15,12 +15,12 @@ object ParticleSimulatorApp extends JFXApp3 {
   override def start(): Unit = {
     // Create the canvas for the particle simulation
     val canvas = new Canvas(DefaultWidth, DefaultHeight)
-
+    
     val simulator = new Simulator(DefaultWidth, DefaultHeight)
 
     // Add some particles to the simulator
     val colors = List(Color.Red, Color.Blue, Color.Green, Color.Orange, Color.Purple)
-    for (i <- 1 to 100) {
+    for (i <- 1 to 250) {
       val p = Particle(
         x = math.random() * DefaultWidth,
         y = math.random() * DefaultHeight,
@@ -58,8 +58,19 @@ object ParticleSimulatorApp extends JFXApp3 {
       fullScreenExitHint = "" // Remove the fullscreen exit hint
       fullScreenExitKey = null // Disable Esc key for exiting fullscreen mode
 
-      // Optional: Remove window decorations (close, minimize buttons) in fullscreen mode
+      // Remove window decorations (close, minimize buttons) in fullscreen mode
       initStyle(StageStyle.Undecorated)
+    }
+
+    canvas.widthProperty().bind(stage.scene().widthProperty())
+    canvas.heightProperty().bind(stage.scene().heightProperty())
+
+    // Update the simulator's bounds when the canvas is resized
+    canvas.widthProperty().addListener { (_, _, newWidth) =>
+      simulator.updateBounds(newWidth.doubleValue(), canvas.height.value)
+    }
+    canvas.heightProperty().addListener { (_, _, newHeight) =>
+      simulator.updateBounds(canvas.width.value, newHeight.doubleValue())
     }
   }
 }
